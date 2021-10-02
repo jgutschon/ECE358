@@ -9,7 +9,7 @@ import datetime
 # Total Simulation Time (s)
 # TODO: 4.5 outlines a method of finding an appropriate T. This may need to be
 # adjusted accordingly
-T = 10000
+T = 1000
 
 # Average length of packet (bits)
 L = 2000
@@ -17,6 +17,10 @@ L = 2000
 # Transmission rate of the output link (bits/second)
 C = 1e6
 
+# 5, since lab manual specifies: "Generate a set of random observation times according
+# to the packet arrival distribution with rate at least 5 times the rate of the packet
+# arrival"
+RATIO_OBSERVATIONS_TO_ARRIVALS = 5
 """ Section 4.4 """
 
 # TODO: Unsure if this is unnecessary. In 4.4.1 "Generating Exponential Random
@@ -42,22 +46,19 @@ class Queue:
         DEPARTURE = 1
         OBSERVATION = 2
 
-    def __init__(self, K: int = None) -> None:
-        self._K = K
+    def __init__(self,) -> None:
         self._reset_lists()
 
-    def simulate(self, avg_arrival_time: float) -> Tuple[int, int, int, int]:
+    def simulate(
+        self, avg_arrival_time: float, K: int = None
+    ) -> Tuple[int, int, int, int]:
+        self._K = K
 
         # Reset the list
         self._reset_lists()
-        print(f"Begin arrival time generation: {datedatetime.now()}")
         self._generate_packet_arrival_times(avg_arrival_time)
-        print(f"Begin observer time generation: {datedatetime.now()}")
         self._generate_observer_events(avg_arrival_time)
-        print(f"Begin departure time generation: {datedatetime.now()}")
         self._generate_departure_times()
-
-        print(f"Begin queue simulation: {datedatetime.now()}")
         self._queue_simulation()
 
         num_arrival_packets = len(self._arrival_times)
@@ -109,7 +110,7 @@ class Queue:
     def _generate_departure_times(self) -> None:
 
         previous_departure_time = 0
-
+        time_idle = 0
         for i in range(len(self._arrival_times)):
 
             # M/M/1/K Scenario
@@ -171,6 +172,9 @@ class Queue:
                 previous_departure_time, best_begin_processing_time
             )
 
+            if best_begin_processing_time == begin_processing_time:
+                time_idle += begin_processing_time - previous_departure_time
+
             # The transmission time needs to be added, which is the packet length
             # divided by the transmission rate
             self._departure_times[i] = (
@@ -185,16 +189,18 @@ class Queue:
         # Reset the list
         self._observation_times = list()
 
-        total_time_elapsed = 0
+        # First instance
+        total_time_elapsed = exponential_random(
+            1 / (avg_arrival_time / RATIO_OBSERVATIONS_TO_ARRIVALS)
+        )
 
         while total_time_elapsed < T:
-            # Divided by 5, since lab manual specifies: "Generate a set of random
-            # observation times according to the packet arrival distribution with rate
-            # at least 5 times the rate of the packet arrival"
-            observation_time = exponential_random(1 / (avg_arrival_time / 5))
+            observation_time = exponential_random(
+                1 / (avg_arrival_time / RATIO_OBSERVATIONS_TO_ARRIVALS)
+            )
 
             # Update variables
-            self._observation_times.append(observation_time)
+            self._observation_times.append(total_time_elapsed)
             total_time_elapsed += observation_time
 
     # 4.5.2 and 4.5.3
@@ -206,25 +212,56 @@ class Queue:
 
         # These were set to None when the buffer dropped this packet. These values are
         # removed before sorting
-        print(f"Begin extraction : {datedatetime.now()}")
-        arrival_times = [t for t in self._arrival_times if t != None]
-        departure_times = [t for t in self._departure_times if t != None]
+        sorted_events = list()
+        arr_i = dep_i = obs_i = 0
 
-        print(f"Begin list creation : {datedatetime.now()}")
-        des_event_times = arrival_times + departure_times + self._observation_times
-        des_event_types = (
-            [Queue.EventType.ARRIVAL] * len(arrival_times)
-            + [Queue.EventType.DEPARTURE] * len(departure_times)
-            + [Queue.EventType.OBSERVATION] * len(self._observation_times)
-        )
-        print(f"Begin sorting : {datedatetime.now()}")
-        sorted_events = [
-            event_type
-            for _, event_type in sorted(
-                zip(des_event_times, des_event_types), key=lambda pair: pair[0]
-            )
-        ]
-        print(f"End sorting : {datedatetime.now()}")
+        while (
+            arr_i != len(self._arrival_times)
+            or dep_i != len(self._departure_times)
+            or obs_i != len(self._observation_times)
+        ):
+            if arr_i != len(self._arrival_times) and self._arrival_times[arr_i] is None:
+                arr_i += 1
+                continue
+
+            if (
+                dep_i != len(self._departure_times)
+                and self._departure_times[dep_i] is None
+            ):
+                dep_i += 1
+                continue
+
+            lowest_time = float("inf")
+
+            if (
+                arr_i != len(self._arrival_times)
+                and lowest_time > self._arrival_times[arr_i]
+            ):
+                event = Queue.EventType.ARRIVAL
+                lowest_time = self._arrival_times[arr_i]
+
+            if (
+                dep_i != len(self._departure_times)
+                and lowest_time > self._departure_times[dep_i]
+            ):
+                event = Queue.EventType.DEPARTURE
+                lowest_time = self._departure_times[dep_i]
+
+            if (
+                obs_i != len(self._observation_times)
+                and lowest_time > self._observation_times[obs_i]
+            ):
+                event = Queue.EventType.OBSERVATION
+                lowest_time = self._observation_times[obs_i]
+
+            if event is Queue.EventType.ARRIVAL:
+                arr_i += 1
+            elif event is Queue.EventType.DEPARTURE:
+                dep_i += 1
+            elif event is Queue.EventType.OBSERVATION:
+                obs_i += 1
+
+            sorted_events.append(event)
 
         """ Section 4.5.3 """
 
@@ -248,7 +285,6 @@ class Queue:
                 continue
 
             # This is an Queue.EventType.OBSERVATION
-
             if arrival_count == departure_count:
                 self._queue_idle_count += 1
 
@@ -267,11 +303,11 @@ if __name__ == "__main__":
     # Expected values found from https://en.wikipedia.org/wiki/Exponential_distribution
     print("Q1 - Exponential Random (1000 samples):")
     print(
-        f"\tAverage(actual): {np.average(number_sample)} Average(expected): {1 / lam}"
+        f"\tAverage(actual): {np.average(number_sample):.4f} Average(expected): {1 / lam:.4f}"
     )
     print(
-        f"\tVariance(actual): {np.var(number_sample)} Variance(expected):"
-        f"{1 / (lam ** 2)}"
+        f"\tVariance(actual): {np.var(number_sample):.4f} Variance(expected):"
+        f"{1 / (lam ** 2):.4f}"
     )
 
     # Q2 - Done in Report
@@ -284,9 +320,7 @@ if __name__ == "__main__":
 
     print("Q3 - Queue Implementation:")
     queue = Queue()
-    # for rho in np.arange(0.25, 0.95, 0.1):
-    for _ in range(5):
-        rho = 0.25
+    for rho in np.arange(0.25, 1.05, 0.1):
         # Rearranging rho (utilization rate) generates the following
         lam = rho * C / L
         average_time = 1 / lam
@@ -301,9 +335,24 @@ if __name__ == "__main__":
     rho = 1.2
     lam = rho * C / L
     average_time = 1 / lam
-    queue_data = queue.generate_packet_arrival_times(average_time)
-    queue_data, time_idle = queue.generate_departure_times()
+    num_packets, _, p_idle, _ = queue.simulate(average_time)
     print(
-        f"\tRho: {rho:.2f}, Number of Packets: {len(queue_data)}, "
-        f"Proportion Time Idle (s/s): {time_idle / T:.4f}"
+        f"\tRho: {rho:.2f}, Number of Packets: {num_packets}, "
+        f"Proportion Time Idle (s/s): {p_idle:.4f}"
     )
+
+    # Q5 - Done in Report
+    # Q6
+    print("Q6 - M/M/1/K:")
+    for K_val in [10, 25, 50]:
+        for rho in np.arange(0.5, 1.6, 0.1):
+            lam = rho * C / L
+            average_time = 1 / lam
+            num_packets, e_n, p_idle, p_loss = queue.simulate(average_time, K_val)
+
+            print(
+                f"\tM/M/1/{K_val} - Rho: {rho:.2f}, "
+                f"Average Packets in Queue (E[N]): {e_n}, "
+                f"Proportion Time Idle (s/s): {p_idle:.4f}: "
+                f"Proportion Packets Lost (packet/packet): {p_loss:.4f}"
+            )
