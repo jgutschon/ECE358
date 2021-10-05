@@ -1,3 +1,8 @@
+"""ECE358 - Computer Networks, Lab 1.
+Code written solely by Jonathan Gutschon and Daniel Robson.
+To run, run the command: 
+python3 ./main.py
+"""
 #!/usr/bin/python3
 import numpy as np
 from math import log
