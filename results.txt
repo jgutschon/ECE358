@@ -2,16 +2,16 @@ Q1 - Exponential Random (1000 samples):
         Average(actual): 0.0134 Average(expected): 0.0133
         Variance(actual): 0.0002 Variance(expected):0.0002
 Q3 - Queue Implementation:
-        Rho: 0.25, Number of Packets: 124745, P_Idle (s/s): 0.7500
-        Rho: 0.35, Number of Packets: 174384, P_Idle (s/s): 0.6502
-        Rho: 0.45, Number of Packets: 224349, P_Idle (s/s): 0.5515
-        Rho: 0.55, Number of Packets: 275629, P_Idle (s/s): 0.4487
-        Rho: 0.65, Number of Packets: 325606, P_Idle (s/s): 0.3508
-        Rho: 0.75, Number of Packets: 374928, P_Idle (s/s): 0.2518
-        Rho: 0.85, Number of Packets: 425392, P_Idle (s/s): 0.1502
-        Rho: 0.95, Number of Packets: 474378, P_Idle (s/s): 0.0517
+        Rho: 0.25, Average Packets in Queue (E[N]): 0.3343859783839819, Number of Packets: 125256, P_Idle (s/s): 0.7497
+        Rho: 0.35, Average Packets in Queue (E[N]): 0.5386668403295481, Number of Packets: 175569, P_Idle (s/s): 0.6488
+        Rho: 0.45, Average Packets in Queue (E[N]): 0.8295154615370952, Number of Packets: 224991, P_Idle (s/s): 0.5485
+        Rho: 0.55, Average Packets in Queue (E[N]): 1.2190678086240025, Number of Packets: 275895, P_Idle (s/s): 0.4509
+        Rho: 0.65, Average Packets in Queue (E[N]): 1.8739439409148166, Number of Packets: 324942, P_Idle (s/s): 0.3506
+        Rho: 0.75, Average Packets in Queue (E[N]): 3.0072298133070987, Number of Packets: 375605, P_Idle (s/s): 0.2501
+        Rho: 0.85, Average Packets in Queue (E[N]): 5.810634542974644, Number of Packets: 424593, P_Idle (s/s): 0.1482
+        Rho: 0.95, Average Packets in Queue (E[N]): 20.725655992879464, Number of Packets: 475090, P_Idle (s/s): 0.0508
 Q4 - Rho = 1.2:
-        Rho: 1.20, Number of Packets: 599935, Proportion Time Idle (s/s): 0.0000
+        Rho: 1.20, Average Packets in Queue (E[N]): 49599.3805456658, Number of Packets: 598582, Proportion Time Idle (s/s): 0.0000
 Q6 - M/M/1/K:
         M/M/1/10 - Rho: 0.50, Average Packets in Queue (E[N]): 0.9984408263139805, Proportion Time Idle (s/s): 0.5007: Proportion Packets Lost (packet/packet): 0.0004
         M/M/1/10 - Rho: 0.60, Average Packets in Queue (E[N]): 1.469480554539074, Proportion Time Idle (s/s): 0.4000: Proportion Packets Lost (packet/packet): 0.0024
