@@ -3,7 +3,7 @@ import numpy as np
 from math import log
 from typing import Tuple
 from enum import Enum
-import datetime
+import argparse
 
 
 # Total Simulation Time (s)
@@ -357,59 +357,76 @@ class Queue:
 
 if __name__ == "__main__":
 
-    # Q1
-    lam = 75
-    number_sample = list()
-    for _ in range(1000):
-        number_sample.append(exponential_random(lam))
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-q",
+        "--questions",
+        nargs="+",
+        help="<Optional> Specify which question you'd like to run the simulation for. "
+        "Acceptable values: [1, 3, 4, 6]",
+        required=False,
+        type=int,
+        default=[1, 3, 4, 6],
+    )
 
-    # Expected values found from https://en.wikipedia.org/wiki/Exponential_distribution
-    print("Q1 - Exponential Random (1000 samples):")
-    print(
-        f"\tAverage(actual): {np.average(number_sample):.4f} Average(expected): {1 / lam:.4f}"
-    )
-    print(
-        f"\tVariance(actual): {np.var(number_sample):.4f} Variance(expected):"
-        f"{1 / (lam ** 2):.4f}"
-    )
+    # Q1
+    if 1 in parser.parse_args().questions:
+        lam = 75
+        number_sample = list()
+        for _ in range(1000):
+            number_sample.append(exponential_random(lam))
+
+        # Expected values found from https://en.wikipedia.org/wiki/Exponential_distribution
+        print("Q1 - Exponential Random (1000 samples):")
+        print(
+            f"\tAverage(actual): {np.average(number_sample):.4f} Average(expected): {1 / lam:.4f}"
+        )
+        print(
+            f"\tVariance(actual): {np.var(number_sample):.4f} Variance(expected):"
+            f"{1 / (lam ** 2):.4f}"
+        )
 
     # Q2 - Done in Report
     # Q3
-    print("Q3 - Queue Implementation:")
-    queue = Queue()
-    for rho in np.arange(0.25, 1.05, 0.1):
-        # Rearranging rho (utilization rate) generates the following
+    if 3 in parser.parse_args().questions:
+        print("Q3 - Queue Implementation:")
+        queue = Queue()
+        for rho in np.arange(0.25, 1.05, 0.1):
+            # Rearranging rho (utilization rate) generates the following
+            lam = rho * C / L
+            average_time = 1 / lam
+            num_packets, _, p_idle, _ = queue.simulate(average_time)
+            print(
+                f"\tRho: {rho:.2f}, Number of Packets: {num_packets}, "
+                f"P_Idle (s/s): {p_idle:.4f}"
+            )
+
+    # Q4
+    if 4 in parser.parse_args().questions:
+        print("Q4 - Rho = 1.2:")
+        rho = 1.2
         lam = rho * C / L
         average_time = 1 / lam
         num_packets, _, p_idle, _ = queue.simulate(average_time)
         print(
             f"\tRho: {rho:.2f}, Number of Packets: {num_packets}, "
-            f"P_Idle (s/s): {p_idle:.4f}"
+            f"Proportion Time Idle (s/s): {p_idle:.4f}"
         )
-
-    # Q4
-    print("Q4 - Rho = 1.2:")
-    rho = 1.2
-    lam = rho * C / L
-    average_time = 1 / lam
-    num_packets, _, p_idle, _ = queue.simulate(average_time)
-    print(
-        f"\tRho: {rho:.2f}, Number of Packets: {num_packets}, "
-        f"Proportion Time Idle (s/s): {p_idle:.4f}"
-    )
 
     # Q5 - Done in Report
     # Q6
-    print("Q6 - M/M/1/K:")
-    for K_val in [10, 25, 50]:
-        for rho in np.arange(0.5, 1.6, 0.1):
-            lam = rho * C / L
-            average_time = 1 / lam
-            num_packets, e_n, p_idle, p_loss = queue.simulate(average_time, K_val)
+    if 6 in parser.parse_args().questions:
 
-            print(
-                f"\tM/M/1/{K_val} - Rho: {rho:.2f}, "
-                f"Average Packets in Queue (E[N]): {e_n}, "
-                f"Proportion Time Idle (s/s): {p_idle:.4f}: "
-                f"Proportion Packets Lost (packet/packet): {p_loss:.4f}"
-            )
+        print("Q6 - M/M/1/K:")
+        for K_val in [10, 25, 50]:
+            for rho in np.arange(0.5, 1.6, 0.1):
+                lam = rho * C / L
+                average_time = 1 / lam
+                num_packets, e_n, p_idle, p_loss = queue.simulate(average_time, K_val)
+
+                print(
+                    f"\tM/M/1/{K_val} - Rho: {rho:.2f}, "
+                    f"Average Packets in Queue (E[N]): {e_n}, "
+                    f"Proportion Time Idle (s/s): {p_idle:.4f}: "
+                    f"Proportion Packets Lost (packet/packet): {p_loss:.4f}"
+                )
