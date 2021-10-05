@@ -393,9 +393,9 @@ if __name__ == "__main__":
 
     # Q2 - Done in Report
     # Q3
+    queue = Queue()
     if 3 in parser.parse_args().questions:
         print("Q3 - Queue Implementation:")
-        queue = Queue()
         for rho in np.arange(0.25, 1.05, 0.1):
             # Rearranging rho (utilization rate) generates the following
             lam = rho * C / L
