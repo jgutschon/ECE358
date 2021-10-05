@@ -101,7 +101,7 @@ class Queue:
             # arrival_1     length_1
             # arrival_2     length_2
             self._arrival_times.append(total_time_elapsed)
-            self._packet_lengths.append(packet_length)
+            self._packet_lengths.append(int(packet_length))
             total_time_elapsed += arrival_time
 
         self._departure_times = [None] * len(self._arrival_times)
