@@ -5,11 +5,8 @@ from typing import Tuple
 from enum import Enum
 import datetime
 
-# TODO: Function docstrings?
 
 # Total Simulation Time (s)
-# TODO: 4.5 outlines a method of finding an appropriate T. This may need to be
-# adjusted accordingly
 T = 1000
 
 # Average length of packet (bits)
@@ -378,12 +375,6 @@ if __name__ == "__main__":
 
     # Q2 - Done in Report
     # Q3
-
-    # TODO: Part 1 asks for what the average number of packets in the queue, as a
-    # function of rho
-    # TODO: Part 2 asks for a function for P_idle
-    # TODO: Part 2 asks for how we got this function
-
     print("Q3 - Queue Implementation:")
     queue = Queue()
     for rho in np.arange(0.25, 1.05, 0.1):
