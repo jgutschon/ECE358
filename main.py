@@ -400,9 +400,10 @@ if __name__ == "__main__":
             # Rearranging rho (utilization rate) generates the following
             lam = rho * C / L
             average_time = 1 / lam
-            num_packets, _, p_idle, _ = queue.simulate(average_time)
+            num_packets, e_n, p_idle, _ = queue.simulate(average_time)
             print(
-                f"\tRho: {rho:.2f}, Number of Packets: {num_packets}, "
+                f"\tRho: {rho:.2f}, Average Packets in Queue (E[N]): {e_n:.4f}, "
+                f"Number of Packets: {num_packets}, "
                 f"P_Idle (s/s): {p_idle:.4f}"
             )
 
@@ -412,9 +413,10 @@ if __name__ == "__main__":
         rho = 1.2
         lam = rho * C / L
         average_time = 1 / lam
-        num_packets, _, p_idle, _ = queue.simulate(average_time)
+        num_packets, e_n, p_idle, _ = queue.simulate(average_time)
         print(
-            f"\tRho: {rho:.2f}, Number of Packets: {num_packets}, "
+            f"\tRho: {rho:.2f}, Average Packets in Queue (E[N]): {e_n:.4f}, "
+            f"Number of Packets: {num_packets}, "
             f"Proportion Time Idle (s/s): {p_idle:.4f}"
         )
 
@@ -431,7 +433,7 @@ if __name__ == "__main__":
 
                 print(
                     f"\tM/M/1/{K_val} - Rho: {rho:.2f}, "
-                    f"Average Packets in Queue (E[N]): {e_n}, "
+                    f"Average Packets in Queue (E[N]): {e_n:.4f}, "
                     f"Proportion Time Idle (s/s): {p_idle:.4f}: "
                     f"Proportion Packets Lost (packet/packet): {p_loss:.4f}"
                 )
