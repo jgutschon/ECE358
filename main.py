@@ -22,19 +22,22 @@ C = 1e6
 # to the packet arrival distribution with rate at least 5 times the rate of the packet
 # arrival"
 RATIO_OBSERVATIONS_TO_ARRIVALS = 5
-""" Section 4.4 """
-
-# TODO: Unsure if this is unnecessary. In 4.4.1 "Generating Exponential Random
-# Variables", they say "We will use the inverse method", but is that the exponential
-# method?
-def inverse_random(min: float = 0, max: float = 1) -> float:
-    return 1 / (np.random.uniform(min, max))
-
 
 """ Section 4.4.1 """
 
 
 def exponential_random(lam: float, min: float = 0, max: float = 1) -> float:
+    """Computes an exponential random value. It is computed using the following:
+    -(1 / lam) * log(1 - np.random.uniform(min, max)).
+
+    Args:
+        lam (float): Inverse of the average exponential random value.
+        min (float, optional): Minimum value for the random value. Defaults to 0.
+        max (float, optional): Maximum value for the random value.  Defaults to 1.
+
+    Returns:
+        float: The randomly generated exponential random value.
+    """
     return -(1 / lam) * log(1 - np.random.uniform(min, max))
 
 
@@ -53,6 +56,30 @@ class Queue:
     def simulate(
         self, avg_arrival_time: float, K: int = None
     ) -> Tuple[int, int, int, int]:
+        """Simulates the M/M/1 or M/M/1/K queue, as specified by the K parameter. It
+        begins by resetting the current queue information, then populates the packet
+        arrival times. The packet arrival times are dependent on avg_arrival_time. The
+        observer events are then created, at 5 * avg_arrival_time, as specified to do
+        so from the lab manual. The departure times are then computed for each
+        corresponding packet, based on the transmission rate. If a packet is dropped,
+        the arrival time and departure time in their corresponding lists are set to
+        None. Then, the observer, departure, and arrival lists are combined, and the
+        queue statistics are computed.
+
+        Args:
+            avg_arrival_time (float): Average arrival packet arrival time.
+            K (int, optional): Queue packet limit. If it is not specified, a M/M/1
+            queue with infinite buffer length will be used instead of a M/M/1/K.
+            Defaults to None.
+
+        Returns:
+            Tuple[int, int, int, int]: Returns a tuple of the:
+            1. computed number of arrival packets,
+            2. average number of packets in the queue
+            3. p_idle, proportion of time the server is idle
+            4. p_loss, probability of packet loss. Ratio of the total number of packets
+            lost due to the buffer being full, to the total number of generated packets.
+        """
         self._K = K
 
         # Reset the list
@@ -63,14 +90,19 @@ class Queue:
         self._queue_simulation()
 
         num_arrival_packets = len(self._arrival_times)
+
         # E[N]
         avg_packets_in_queue = self._queue_packet_count / len(self._observation_times)
-        P_idle = self._queue_idle_count / len(self._observation_times)
-        P_loss = self._queue_dropped_packets / num_arrival_packets
+        p_idle = self._queue_idle_count / len(self._observation_times)
+        p_loss = self._queue_dropped_packets / num_arrival_packets
 
-        return num_arrival_packets, avg_packets_in_queue, P_idle, P_loss
+        return num_arrival_packets, avg_packets_in_queue, p_idle, p_loss
 
     def _reset_lists(self) -> None:
+        """Resets the various lists of the queue, that are required for its operation.
+        This should be called if the queue has been previous used, and needs to clear
+        its state for a different dataset
+        """
         self._arrival_times = list()
         self._packet_lengths = list()
         self._departure_times = list()
@@ -83,14 +115,17 @@ class Queue:
     """ Section 4.5.1.1a """
 
     def _generate_packet_arrival_times(self, avg_arrival_time: float) -> None:
+        """Generates a list of packets with their arrival times. Their arrival times
+        are equal to the previous arrival time + the exponential random value. The
+        final time in the list will just be greater than the total simulation time.
+        """
 
         total_time_elapsed = 0
 
         while total_time_elapsed < T:
-            # TODO: 4.5.1.1a says to use the "inverse method" while also saying the
-            # "exponential distribution". Which is it?
             arrival_time = exponential_random(1 / avg_arrival_time)
-            packet_length = exponential_random(1 / L)
+            # The packet length is in bits, which must be an integer value
+            packet_length = int(exponential_random(1 / L))
 
             # Update variables. Update the arrival_times list before the
             # total_time_elapsed variable, since this needs to start with 0 seconds. Then
@@ -101,7 +136,7 @@ class Queue:
             # arrival_1     length_1
             # arrival_2     length_2
             self._arrival_times.append(total_time_elapsed)
-            self._packet_lengths.append(int(packet_length))
+            self._packet_lengths.append(packet_length)
             total_time_elapsed += arrival_time
 
         self._departure_times = [None] * len(self._arrival_times)
@@ -109,6 +144,22 @@ class Queue:
     """ Section 4.5.1.1b """
 
     def _generate_departure_times(self) -> None:
+        """Takes the self._arrival_times list, and computes the corresponding departure
+        time for the packet. This is determined either by the departure time of the
+        previous packet plus the transmission time for the packet
+        (packet length / transmission rate (C)), or the addition of the packets arrival
+        time + it's transmission time. The greater value is used. For the former, it is
+        assuming that the packet has not been processed yet, while the latter assumes
+        that the previous packet has been completed before the next arrival and that
+        the queue is empty.
+
+        For the M/M/1/K case, the number of packets currently in the queue are counted.
+        If the number of packets in the queue is greater than K, the arrival time and
+        departure time will be set to None. This allows the sorting step to recognize
+        which packets were dropped, and simply drop the packets. This allows the
+        determining of packet drops to be controlled within this function, and not
+        later.
+        """
 
         previous_departure_time = 0
         time_idle = 0
@@ -186,7 +237,15 @@ class Queue:
     """ Section 4.5.1.1c """
 
     def _generate_observer_events(self, avg_arrival_time: float) -> None:
+        """Generates observer times at a an avg time of avg_arrival_time / 5. Their
+        arrival times are equal to the previous arrival time + the exponential random
+        value. The final time in the list will just be greater than the total
+        simulation time.
 
+        Args:
+            avg_arrival_time (float): Generates observer times at a average rate of 
+            avg_arrival_time / 5
+        """
         # Reset the list
         self._observation_times = list()
 
@@ -206,6 +265,12 @@ class Queue:
 
     # 4.5.2 and 4.5.3
     def _queue_simulation(self) -> None:
+        """Simulates the Queue. Creates a DES, where the list of packet events are
+        sorted in simulation order. The combined list includes the arrival,
+        observation, and departure times. Any None values in the arrival and departure
+        lists are removed, since these were determined to be dropped. This function
+        will update the self._queue_idle_count and self._queue_packet_count variables
+        """
 
         """ Section 4.5.2 """
         # Combine all 3 event lists and their time stamps, and sort the list in
