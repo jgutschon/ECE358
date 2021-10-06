@@ -283,56 +283,21 @@ class Queue:
         # These were set to None when the buffer dropped this packet. These values are
         # removed before sorting
         sorted_events = list()
-        arr_i = dep_i = obs_i = 0
+        arrival_times = [t for t in self._arrival_times if t != None]
+        departure_times = [t for t in self._departure_times if t != None]
 
-        # TODO: Replace this with Python's built in sort. It's in a previous commit...
-        while (
-            arr_i != len(self._arrival_times)
-            or dep_i != len(self._departure_times)
-            or obs_i != len(self._observation_times)
-        ):
-            if arr_i != len(self._arrival_times) and self._arrival_times[arr_i] is None:
-                arr_i += 1
-                continue
-
-            if (
-                dep_i != len(self._departure_times)
-                and self._departure_times[dep_i] is None
-            ):
-                dep_i += 1
-                continue
-
-            lowest_time = float("inf")
-
-            if (
-                arr_i != len(self._arrival_times)
-                and lowest_time > self._arrival_times[arr_i]
-            ):
-                event = Queue.EventType.ARRIVAL
-                lowest_time = self._arrival_times[arr_i]
-
-            if (
-                dep_i != len(self._departure_times)
-                and lowest_time > self._departure_times[dep_i]
-            ):
-                event = Queue.EventType.DEPARTURE
-                lowest_time = self._departure_times[dep_i]
-
-            if (
-                obs_i != len(self._observation_times)
-                and lowest_time > self._observation_times[obs_i]
-            ):
-                event = Queue.EventType.OBSERVATION
-                lowest_time = self._observation_times[obs_i]
-
-            if event is Queue.EventType.ARRIVAL:
-                arr_i += 1
-            elif event is Queue.EventType.DEPARTURE:
-                dep_i += 1
-            elif event is Queue.EventType.OBSERVATION:
-                obs_i += 1
-
-            sorted_events.append(event)
+        des_event_times = arrival_times + departure_times + self._observation_times
+        des_event_types = (
+            [Queue.EventType.ARRIVAL] * len(arrival_times)
+            + [Queue.EventType.DEPARTURE] * len(departure_times)
+            + [Queue.EventType.OBSERVATION] * len(self._observation_times)
+        )
+        sorted_events = [
+            event_type
+            for _, event_type in sorted(
+                zip(des_event_times, des_event_types), key=lambda pair: pair[0]
+            )
+        ]
 
         """ Section 4.5.3 """
 
