@@ -11,14 +11,11 @@ from enum import Enum
 import argparse
 
 
-# Total Simulation Time (s)
-T = 1000
-
 # Average length of packet (bits)
-L = 2000
+AVERAGE_PACKET_LENGTH = 2000
 
 # Transmission rate of the output link (bits/second)
-C = 1e6
+TRANSMISSION_RATE = 1e6
 
 # 5, since lab manual specifies: "Generate a set of random observation times according
 # to the packet arrival distribution with rate at least 5 times the rate of the packet
@@ -56,7 +53,7 @@ class Queue:
         self._reset_lists()
 
     def simulate(
-        self, avg_arrival_time: float, K: int = None
+        self, avg_arrival_time: float, simulation_time: int, K: int = None,
     ) -> Tuple[int, int, int, int]:
         """Simulates the M/M/1 or M/M/1/K queue, as specified by the K parameter. It
         begins by resetting the current queue information, then populates the packet
@@ -70,6 +67,7 @@ class Queue:
 
         Args:
             avg_arrival_time (float): Average arrival packet arrival time.
+            simulation_time (int): Simulation time in seconds
             K (int, optional): Queue packet limit. If it is not specified, a M/M/1
             queue with infinite buffer length will be used instead of a M/M/1/K.
             Defaults to None.
@@ -86,8 +84,8 @@ class Queue:
 
         # Reset the list
         self._reset_lists()
-        self._generate_packet_arrival_times(avg_arrival_time)
-        self._generate_observer_events(avg_arrival_time)
+        self._generate_packet_arrival_times(avg_arrival_time, simulation_time)
+        self._generate_observer_events(avg_arrival_time, simulation_time)
         self._generate_departure_times()
         self._queue_simulation()
 
@@ -116,7 +114,9 @@ class Queue:
 
     """ Section 4.5.1.1a """
 
-    def _generate_packet_arrival_times(self, avg_arrival_time: float) -> None:
+    def _generate_packet_arrival_times(
+        self, avg_arrival_time: float, simulation_time: int
+    ) -> None:
         """Generates a list of packets with their arrival times. Their arrival times
         are equal to the previous arrival time + the exponential random value. The
         final time in the list will just be greater than the total simulation time.
@@ -124,10 +124,10 @@ class Queue:
 
         total_time_elapsed = 0
 
-        while total_time_elapsed < T:
+        while total_time_elapsed < simulation_time:
             arrival_time = exponential_random(1 / avg_arrival_time)
             # The packet length is in bits, which must be an integer value
-            packet_length = int(exponential_random(1 / L))
+            packet_length = int(exponential_random(1 / AVERAGE_PACKET_LENGTH))
 
             # Update variables. Update the arrival_times list before the
             # total_time_elapsed variable, since this needs to start with 0 seconds. Then
@@ -232,13 +232,15 @@ class Queue:
             # The transmission time needs to be added, which is the packet length
             # divided by the transmission rate
             self._departure_times[i] = (
-                begin_processing_time + self._packet_lengths[i] / C
+                begin_processing_time + self._packet_lengths[i] / TRANSMISSION_RATE
             )
             previous_departure_time = self._departure_times[i]
 
     """ Section 4.5.1.1c """
 
-    def _generate_observer_events(self, avg_arrival_time: float) -> None:
+    def _generate_observer_events(
+        self, avg_arrival_time: float, simulation_time: int
+    ) -> None:
         """Generates observer times at a an avg time of avg_arrival_time / 5. Their
         arrival times are equal to the previous arrival time + the exponential random
         value. The final time in the list will just be greater than the total
@@ -256,7 +258,7 @@ class Queue:
             1 / (avg_arrival_time / RATIO_OBSERVATIONS_TO_ARRIVALS)
         )
 
-        while total_time_elapsed < T:
+        while total_time_elapsed < simulation_time:
             observation_time = exponential_random(
                 1 / (avg_arrival_time / RATIO_OBSERVATIONS_TO_ARRIVALS)
             )
@@ -283,6 +285,7 @@ class Queue:
         sorted_events = list()
         arr_i = dep_i = obs_i = 0
 
+        # TODO: Replace this with Python's built in sort. It's in a previous commit...
         while (
             arr_i != len(self._arrival_times)
             or dep_i != len(self._departure_times)
@@ -368,14 +371,23 @@ if __name__ == "__main__":
         "--questions",
         nargs="+",
         help="<Optional> Specify which question you'd like to run the simulation for. "
-        "Acceptable values: [1, 3, 4, 6]",
+        "Acceptable values: [1, 3, 4, 6]. Defaults to all.",
         required=False,
         type=int,
         default=[1, 3, 4, 6],
     )
+    parser.add_argument(
+        "-t",
+        "--time-simulation",
+        help="<Optional> Specify the simulation time. Defaults to 1000",
+        required=False,
+        type=int,
+        default=1000,
+    )
 
+    parser_args = parser.parse_args()
     # Q1
-    if 1 in parser.parse_args().questions:
+    if 1 in parser_args.questions:
         lam = 75
         number_sample = list()
         for _ in range(1000):
@@ -384,23 +396,25 @@ if __name__ == "__main__":
         # Expected values found from https://en.wikipedia.org/wiki/Exponential_distribution
         print("Q1 - Exponential Random (1000 samples):")
         print(
-            f"\tAverage(actual): {np.average(number_sample):.4f} Average(expected): {1 / lam:.4f}"
+            f"\tAverage(actual): {np.average(number_sample):.5f} Average(expected): {1 / lam:.5f}"
         )
         print(
-            f"\tVariance(actual): {np.var(number_sample):.4f} Variance(expected):"
-            f"{1 / (lam ** 2):.4f}"
+            f"\tVariance(actual): {np.var(number_sample):.6f} Variance(expected):"
+            f"{1 / (lam ** 2):.6f}"
         )
 
     # Q2 - Done in Report
     # Q3
     queue = Queue()
-    if 3 in parser.parse_args().questions:
+    if 3 in parser_args.questions:
         print("Q3 - Queue Implementation:")
         for rho in np.arange(0.25, 1.05, 0.1):
             # Rearranging rho (utilization rate) generates the following
-            lam = rho * C / L
+            lam = rho * TRANSMISSION_RATE / AVERAGE_PACKET_LENGTH
             average_time = 1 / lam
-            num_packets, e_n, p_idle, _ = queue.simulate(average_time)
+            num_packets, e_n, p_idle, _ = queue.simulate(
+                average_time, parser_args.time_simulation
+            )
             print(
                 f"\tRho: {rho:.2f}, Average Packets in Queue (E[N]): {e_n:.4f}, "
                 f"Number of Packets: {num_packets}, "
@@ -408,12 +422,14 @@ if __name__ == "__main__":
             )
 
     # Q4
-    if 4 in parser.parse_args().questions:
+    if 4 in parser_args.questions:
         print("Q4 - Rho = 1.2:")
         rho = 1.2
-        lam = rho * C / L
+        lam = rho * TRANSMISSION_RATE / AVERAGE_PACKET_LENGTH
         average_time = 1 / lam
-        num_packets, e_n, p_idle, _ = queue.simulate(average_time)
+        num_packets, e_n, p_idle, _ = queue.simulate(
+            average_time, parser_args.time_simulation
+        )
         print(
             f"\tRho: {rho:.2f}, Average Packets in Queue (E[N]): {e_n:.4f}, "
             f"Number of Packets: {num_packets}, "
@@ -422,14 +438,16 @@ if __name__ == "__main__":
 
     # Q5 - Done in Report
     # Q6
-    if 6 in parser.parse_args().questions:
+    if 6 in parser_args.questions:
 
         print("Q6 - M/M/1/K:")
         for K_val in [10, 25, 50]:
             for rho in np.arange(0.5, 1.6, 0.1):
-                lam = rho * C / L
+                lam = rho * TRANSMISSION_RATE / AVERAGE_PACKET_LENGTH
                 average_time = 1 / lam
-                num_packets, e_n, p_idle, p_loss = queue.simulate(average_time, K_val)
+                num_packets, e_n, p_idle, p_loss = queue.simulate(
+                    average_time, parser_args.time_simulation, K_val
+                )
 
                 print(
                     f"\tM/M/1/{K_val} - Rho: {rho:.2f}, "
