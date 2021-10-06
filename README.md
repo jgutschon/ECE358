@@ -1,10 +1,10 @@
-## ECE358 Computer Networks, Group 95, Lab 1
+# ECE358 Computer Networks, Group 95, Lab 1
 
 This lab was written by Jonathan Gutschon and Daniel Robson
 
 This is our submission for the ECE358 Computer Networks lab. It utilizes the logic of an M/M/1 and M/M/1/K queue.
 
-### Running the script
+## Running the script
 
 To run all questions, simply run:
 
