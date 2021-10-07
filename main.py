@@ -1,9 +1,9 @@
+#!/usr/bin/python3
 """ECE358 - Computer Networks, Lab 1.
 Code written solely by Jonathan Gutschon and Daniel Robson.
 To run, run the command: 
 python3 ./main.py
 """
-#!/usr/bin/python3
 import numpy as np
 from math import log
 from typing import Tuple
@@ -78,7 +78,7 @@ class Queue:
             2. average number of packets in the queue
             3. p_idle, proportion of time the server is idle
             4. p_loss, probability of packet loss. Ratio of the total number of packets
-            lost due to the buffer being full, to the total number of generated packets.
+            lost due to the buffer being full, to the total number of generated packets
         """
         self._K = K
 
@@ -361,7 +361,8 @@ if __name__ == "__main__":
         # Expected values found from https://en.wikipedia.org/wiki/Exponential_distribution
         print("Q1 - Exponential Random (1000 samples):")
         print(
-            f"\tAverage(actual): {np.average(number_sample):.5f} Average(expected): {1 / lam:.5f}"
+            f"\tAverage(actual): {np.average(number_sample):.5f} "
+            f"Average(expected): {1 / lam:.5f}"
         )
         print(
             f"\tVariance(actual): {np.var(number_sample):.6f} Variance(expected):"
