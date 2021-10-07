@@ -171,44 +171,46 @@ class Queue:
             if self._K is not None:
                 # Count the number of items currently in the queue
 
-                # Work backwards in the departure list, starting from the previous queue
-                # item. back_count represents how far in the list to search back, while
-                # queue_count increments when self._departure_times[i - back_count]
-                # > self._arrival_times[i].
-
+                # Work backwards in the departure list, starting from the previous
+                # queue item. back_count represents how far in the departure list to
+                # search back, while queue_count increments when
+                # self._departure_times[i - back_count] > self._arrival_times[i].
                 back_count = 1
                 queue_count = 0
                 while True:
 
-                    # If back_count > i, then we're at the beginning of the departure list
+                    # If back_count > i, then we're at the beginning of the departure
+                    # list
                     if back_count > i:
                         break
 
-                    # This packet was dropped. Continue searching backwards so increment
-                    # the back_count, but DO NOT increment the queue_count since this
-                    # packet never entered the queue
+                    # This packet was dropped. Continue searching backwards so
+                    # increment the back_count, but DO NOT increment the queue_count
+                    # since this packet never entered the queue
                     if self._departure_times[i - back_count] is None:
                         back_count += 1
                         continue
 
-                    # Once we reach a departure time that is less than the current arrival
-                    # time, then we know we've found the last possible queue item, since
-                    # the departure times are sorted
+                    # Once we reach a departure time that is less than the current
+                    # arrival time, then we know we've found the last possible queue
+                    # item, since the departure times are sorted
                     if self._departure_times[i - back_count] < self._arrival_times[i]:
                         break
 
-                    # At this point, we've found an item that is in the queue. Increment
-                    # the queue_count and continue reverse searching the departure list
+                    # At this point, we've found an item that is in the queue.
+                    # Increment the queue_count and continue reverse searching the
+                    # departure list
                     back_count += 1
                     queue_count += 1
 
                 # If there are currently too many items in the queue, drop the packet.
                 if self._K is queue_count:
-                    # departure_time and arrival_time = None signifies that this packet was
-                    # dropped.
+                    # departure_time and arrival_time = None signifies that this packet
+                    # was dropped.
 
                     # When the lists are merged and sorted, these will be ignored. This
-                    # results in a sorted DES list where there will be no dropped packets.
+                    # results in a sorted DES list where there will be no dropped
+                    # packets.
                     self._departure_times[i] = None
                     self._arrival_times[i] = None
                     self._queue_dropped_packets += 1
@@ -276,7 +278,7 @@ class Queue:
         will update the self._queue_idle_count and self._queue_packet_count variables
         """
 
-        """ Section 4.5.2 """
+        """ Section 4.5.1.2 """
         # Combine all 3 event lists and their time stamps, and sort the list in
         # ascending order of time. Keep track of which
 
@@ -299,13 +301,12 @@ class Queue:
             )
         ]
 
-        """ Section 4.5.3 """
+        """ Section 4.5.1.3 """
 
         # Process the DES events in order. Keep a counter of the number of arrivals,
         # departures, and observer events.
         arrival_count = 0
         departure_count = 0
-        observer_events_count = 0
 
         # On an observer event, count the number of times the buffer is idle, and a
         # increment the counter of the number of packets in the buffer
@@ -325,7 +326,6 @@ class Queue:
                 self._queue_idle_count += 1
 
             self._queue_packet_count += arrival_count - departure_count
-            observer_events_count += 1
 
 
 if __name__ == "__main__":
