@@ -24,8 +24,8 @@ To run multiple questions, run:
 python3 ./main.py -q 3 4 6
 ```
 
-To modify the simulation time, run the script with the `-t` flag:
+To change the simulation time (defaulted to 1000 sec):
 
 ```python
-python3 ./main.py -t 1500 -q 6
+python3 ./main.py -t 2000
 ```
