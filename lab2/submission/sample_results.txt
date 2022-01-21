@@ -1,0 +1,32 @@
+Question 1: Persistent CSMA/CD
+Arrival Rate: 7 packets/s       Number of Nodes: 20     Efficiency: 0.93250     Throughput: 0.20996 Mbps
+Arrival Rate: 7 packets/s       Number of Nodes: 40     Efficiency: 0.75261     Throughput: 0.41852 Mbps
+Arrival Rate: 7 packets/s       Number of Nodes: 60     Efficiency: 0.53012     Throughput: 0.62774 Mbps
+Arrival Rate: 7 packets/s       Number of Nodes: 80     Efficiency: 0.30139     Throughput: 0.82181 Mbps
+Arrival Rate: 7 packets/s       Number of Nodes: 100    Efficiency: 0.17955     Throughput: 0.89300 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 20     Efficiency: 0.86929     Throughput: 0.29908 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 40     Efficiency: 0.56644     Throughput: 0.60042 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 60     Efficiency: 0.25434     Throughput: 0.85136 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 80     Efficiency: 0.18181     Throughput: 0.90398 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 100    Efficiency: 0.15907     Throughput: 0.91214 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 20     Efficiency: 0.56756     Throughput: 0.59753 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 40     Efficiency: 0.27596     Throughput: 0.89787 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 60     Efficiency: 0.21407     Throughput: 0.89736 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 80     Efficiency: 0.18103     Throughput: 0.90423 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 100    Efficiency: 0.15855     Throughput: 0.91285 Mbps
+Question 2: Non-Persistent CSMA/CD
+Arrival Rate: 7 packets/s       Number of Nodes: 20     Efficiency: 0.99960     Throughput: 0.20977 Mbps
+Arrival Rate: 7 packets/s       Number of Nodes: 40     Efficiency: 0.99861     Throughput: 0.41795 Mbps
+Arrival Rate: 7 packets/s       Number of Nodes: 60     Efficiency: 0.98617     Throughput: 0.62077 Mbps
+Arrival Rate: 7 packets/s       Number of Nodes: 80     Efficiency: 0.92876     Throughput: 0.78679 Mbps
+Arrival Rate: 7 packets/s       Number of Nodes: 100    Efficiency: 0.84564     Throughput: 0.89140 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 20     Efficiency: 0.99968     Throughput: 0.29989 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 40     Efficiency: 0.99137     Throughput: 0.59411 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 60     Efficiency: 0.91940     Throughput: 0.82727 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 80     Efficiency: 0.82390     Throughput: 0.97722 Mbps
+Arrival Rate: 10 packets/s      Number of Nodes: 100    Efficiency: 0.78105     Throughput: 0.99496 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 20     Efficiency: 0.99271     Throughput: 0.59465 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 40     Efficiency: 0.90065     Throughput: 0.99072 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 60     Efficiency: 0.85521     Throughput: 0.99744 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 80     Efficiency: 0.81545     Throughput: 0.99863 Mbps
+Arrival Rate: 20 packets/s      Number of Nodes: 100    Efficiency: 0.77891     Throughput: 0.99895 Mbps
